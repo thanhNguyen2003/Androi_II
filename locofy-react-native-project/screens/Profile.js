@@ -263,7 +263,7 @@ import { Color, FontFamily, FontSize } from "../GlobalStyles";
       top: 0,
     },
     logout: {
-      left: 70,
+      left: 290,
       width: 24,
       top: 0,
     },

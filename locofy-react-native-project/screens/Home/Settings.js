@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const SettingScreen = () => {
   return (
@@ -15,7 +15,7 @@ const SettingScreen = () => {
         placeholder="Change Email"
         keyboardType="email-address"
       />
-      <Button title="Save" onPress={() => {/* Xử lý lưu thay đổi */}} />
+      <Button title="Save" onPress={() => {/* Xử lý lưu thay đổi */ }} />
     </View>
   );
 };

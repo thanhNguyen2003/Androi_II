@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, Image, FlatList ,TouchableOpacity,ActivityIndicator} from 'react-native';
-import { Color, FontSize,FontFamily } from "../../GlobalStyles";
-import {GET_ALL,GET_IMG} from "../../api/apiService"
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Color, FontFamily, FontSize } from "../../GlobalStyles";
+import { GET_ALL, GET_IMG } from "../../api/apiService";
 
 export default () => {
   const [categoriData, setCarData] = useState([]);

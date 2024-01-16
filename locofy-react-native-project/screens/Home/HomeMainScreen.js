@@ -19,27 +19,37 @@ import {
   FontSize
 } from "../../GlobalStyles";
 import { GET_ALL, GET_IMG } from "../../api/apiService";
-import Title from "../../components/Title";
-import ListCategory from "./ListCategory";
 import ProductItem from "./ProductItem";
 
-const toggleTitleVisibility = () => {
-  setTitleVisible(!isTitleVisible);
-};
+
 const HomeMainScreen = ({ navigation }) => {
   const [carData, setCarData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+
   useEffect(() => {
-    GET_ALL("products")
-      .then((response) => {
-        const responseData = response.data;
-        if (responseData && Array.isArray(responseData.content)) {
-          setCarData(responseData.content); 
+    // Fetch products and brands
+    Promise.all([GET_ALL("products"), GET_ALL("brands")])
+      .then(([productsResponse, brandsResponse]) => {
+        const productsData = productsResponse.data;
+        const brandsData = brandsResponse.data;
+
+        if (productsData && Array.isArray(productsData.content)) {
+          setCarData(productsData.content);
+          setFilteredProducts(productsData.content);
         } else {
-          console.error(
-            "Data received from the API is not in a supported format."
-          );
+          console.error("Products data received from the API is not in a supported format.");
         }
+
+        if (brandsData && Array.isArray(brandsData.content)) {
+          setBrands(brandsData.content);
+        } else {
+          console.error("Brands data received from the API is not in a supported format.");
+        }
+
         setIsLoading(false);
       })
       .catch((error) => {
@@ -47,8 +57,28 @@ const HomeMainScreen = ({ navigation }) => {
         setIsLoading(false);
       });
   }, []);
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    filterProducts(query, selectedBrand);
+  };
+
+  const handleBrandChange = (brand) => {
+    setSelectedBrand(brand);
+    filterProducts(searchQuery, brand);
+  };
+
+  const filterProducts = (query, brand) => {
+    const filtered = carData.filter((product) =>
+      product.title.toLowerCase().includes(query.toLowerCase()) &&
+      (brand ? product.brand === brand : true)
+    );
+    setFilteredProducts(filtered);
+  };
+
   return (
     <View style={styles.container}>
+
       <View style={styles.TopNav}>
         <Image
           style={[styles.TopNavChild, styles.TopLayout]}
@@ -72,7 +102,6 @@ const HomeMainScreen = ({ navigation }) => {
             flexDirection: "row",
             alignItems: "center",
             width: "100%",
-
             marginVertical: 30,
           }}
         >
@@ -87,7 +116,6 @@ const HomeMainScreen = ({ navigation }) => {
               marginLeft: 2,
               height: 45,
               borderRadius: 10,
-
               top: -30,
             }}
           >
@@ -97,8 +125,13 @@ const HomeMainScreen = ({ navigation }) => {
               color="#4f4a4a"
               style={{ marginRight: 10 }}
             />
-            <TextInput placeholder="Tìm Kiếm..." />
+            <TextInput
+              placeholder="Tìm Kiếm..."
+              value={searchQuery}
+              onChangeText={handleSearch}
+            />
           </View>
+
 
           <View
             style={{
@@ -125,61 +158,70 @@ const HomeMainScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
 
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#ff591d" />
-      ) : (
+      </SafeAreaView>
+      {/* Brand Selector */}
+      <View style={{ flexDirection: "row", marginVertical: 10 }}>
+        <Text style={{ marginRight: 10 }}>Sản Phẩm:</Text>
+        {brands.map((brand) => (
+          <TouchableOpacity
+            key={brand.id}
+            onPress={() => handleBrandChange(brand.name)}
+          >
+            <Text style={{ color: selectedBrand === brand.name ? "blue" : "black" }}>
+              {brand.name}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+
+      {!isLoading ? (
         <SafeAreaView style={{ flex: 1, zIndex: 1 }}>
           <ScrollView>
-            <Title content="Thương Hiệu*"></Title>
-
-            <ListCategory />
-
-            <Title content="Sản Phẩm*"></Title>
+            {/* ... other components ... */}
             <FlatList
               scrollEnabled={false}
-              data={carData} 
-              keyExtractor={(item, index) => index.toString()} 
+              data={filteredProducts}
+              keyExtractor={(item, index) => index.toString()}
               numColumns={2}
               renderItem={({ item, index }) => (
                 <View style={styles.content}>
-                  {isLoading ? (
-                    <ActivityIndicator size="large" color="#ff591d" />
-                  ) : (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={{ marginBottom: 1, borderRadius: 15 }}
-                      activeOpacity={0.0}
-                      underlayColor="#FFF"
-                      onPress={() => {
-                        const updatedCoffee = { ...item, total: item.price };
-                        navigation.navigate("Details", {
-                          item: updatedCoffee,
-                        });
-                      }}
-                    >
-                      <ProductItem
-                        key={index}
-                        imageSource={GET_IMG("products", item.photo)}
-                        textContent={item.title}
-                        textPrice={item.price}
-                      />
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity
+                    key={item.id}
+                    style={{ marginBottom: 1, borderRadius: 15 }}
+                    activeOpacity={0.0}
+                    underlayColor="#FFF"
+                    onPress={() => {
+                      const updatedCoffee = { ...item, total: item.price };
+                      navigation.navigate("Details", {
+                        item: updatedCoffee,
+                      });
+                    }}
+                  >
+                    <ProductItem
+                      key={index}
+                      imageSource={GET_IMG("products", item.photo)}
+                      textContent={item.title}
+                      textPrice={item.price}
+                    />
+                  </TouchableOpacity>
                 </View>
               )}
             />
           </ScrollView>
         </SafeAreaView>
+      ) : (
+        <ActivityIndicator size="large" color="#ff591d" />
       )}
     </View>
+
   );
 };
 
 const styles = StyleSheet.create({
   flatListContent: {
-    paddingHorizontal: 16, 
+    paddingHorizontal: 16,
   },
   container: {
     backgroundColor: "transparent",
@@ -207,7 +249,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
     position: "absolute",
   },
-//background đầu
+  //background đầu
   TopLayout: {
     height: 90,
     width: 490,
@@ -216,7 +258,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
     top: 0,
   },
-//logo góc trái
+  //logo góc trái
   homeChild: {
     top: 25,
     width: 80,

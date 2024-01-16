@@ -20,9 +20,9 @@ export function GET_PAGE (endpoint, page= 0, size= 10, categoryId =null){
         url += `&categoryId=${categoryId}`;
     }
 
-    // if (brandsId !== null) {
-    //     url += `&brandsId=${brandsId}`;
-    // }
+    if (brandsId !== null) {
+        url += `&brandsId=${brandsId}`;
+    }
 
     return callApi(url, "GET");
 }

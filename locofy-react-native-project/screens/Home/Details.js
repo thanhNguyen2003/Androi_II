@@ -211,7 +211,7 @@ function Details({ route, navigation }) {
           autoPlay
           loop={true}
           ref={animation}
-          source={require("../../assets/phone.json")} // Replace with your animation source
+          source={require("../../assets/phone.json")}
           style={{
             right: "35%",
             top: "13%",
